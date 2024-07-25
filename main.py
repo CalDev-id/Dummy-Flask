@@ -1,8 +1,8 @@
 from typing import Union
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI
 
 app = FastAPI()
+#uvicorn main:app --reload
 @app.get("/")
 def read_root():
     return {"message": "Hello World"}
@@ -11,39 +11,20 @@ def read_root():
 def read_item(item_id: int, q: str = None):
     return {"item_id": item_id, "q": q}
 
-# @app.get("/ayam")
-# def read_ayam():
-#     return [
-#         {
-#             "id": 1,
-#             "name": "Ayam Bakar"
-#         },
-#         {
-#             "id": 2,
-#             "name": "Ayam Niger"
-#         }
-#     ]
-
-# In-memory storage for the items
-chickens = [
-    {"id": 1, "name": "Ayam Bakar"},
-    {"id": 2, "name": "Ayam Niger"}
-]
-
-# Pydantic model to define the schema for the request body
-class Chicken(BaseModel):
-    name: str
-
 @app.get("/ayam")
-def read_chickens():
-    return chickens
+def read_ayam():
+    return [
+        {
+            "id": 1,
+            "name": "Ayam Bakar"
+        },
+        {
+            "id": 2,
+            "name": "Ayam Niger"
+        }
+    ]
 
-@app.post("/ayam")
-def create_chicken(chicken: Chicken):
-    new_id = max([ch["id"] for ch in chickens]) + 1 if chickens else 1
-    new_chicken = {"id": new_id, "name": chicken.name}
-    chickens.append(new_chicken)
-    return new_chicken
+
 
 
 @app.get("/doc")

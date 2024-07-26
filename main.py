@@ -95,32 +95,32 @@ def create_chat(user_prompt: UserPrompt):
 
 #baru 
 # Load your model
-model = load_model("models/marine_classification.h5")
+# model = load_model("models/marine_classification.h5")
 
-# Define a function to preprocess the image
-def preprocess_image(image: Image.Image) -> np.ndarray:
-    image = image.resize((224, 224))  # Resize the image to match the input shape of your model
-    image = img_to_array(image)       # Convert the image to a numpy array
-    image = np.expand_dims(image, axis=0)  # Add a batch dimension
-    image = image / 255.0             # Normalize the image
-    return image
+# # Define a function to preprocess the image
+# def preprocess_image(image: Image.Image) -> np.ndarray:
+#     image = image.resize((224, 224))  # Resize the image to match the input shape of your model
+#     image = img_to_array(image)       # Convert the image to a numpy array
+#     image = np.expand_dims(image, axis=0)  # Add a batch dimension
+#     image = image / 255.0             # Normalize the image
+#     return image
 
-# Define the prediction endpoint
-@app.post("/predict/")
-async def predict(file: UploadFile = File(...)):
-    # Read the uploaded image
-    image = Image.open(file.file)
+# # Define the prediction endpoint
+# @app.post("/predict/")
+# async def predict(file: UploadFile = File(...)):
+#     # Read the uploaded image
+#     image = Image.open(file.file)
     
-    # Preprocess the image
-    image = preprocess_image(image)
+#     # Preprocess the image
+#     image = preprocess_image(image)
     
-    # Get the model's predictions
-    predictions = model.predict(image)
+#     # Get the model's predictions
+#     predictions = model.predict(image)
     
-    # Convert predictions to a list
-    predictions = predictions.tolist()
+#     # Convert predictions to a list
+#     predictions = predictions.tolist()
     
-    return {"predictions": predictions}
+#     return {"predictions": predictions}
 
 @app.get("/doc")
 def read_doc():

@@ -95,7 +95,7 @@ def create_chat(user_prompt: UserPrompt):
 
 #baru 
 # Load your model
-model = load_model("models/marine_grading_fish.h5")
+model = load_model("models/marine_classification.h5")
 
 # Define a function to preprocess the image
 def preprocess_image(image: Image.Image) -> np.ndarray:

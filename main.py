@@ -1,12 +1,69 @@
 from typing import Union
-from fastapi import FastAPI
+# from fastapi import FastAPI
 import os
 
 from pydantic import BaseModel
 from groq import Groq
 
+#baru
+from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import JSONResponse
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
+import numpy as np
+from PIL import Image
+import io
+
 app = FastAPI()
 #uvicorn main:app --reload
+
+#load model
+#=======================================================================================================================
+
+# Memuat model TensorFlow
+try:
+    model = load_model("models/my_model.keras")
+    print("Model loaded successfully.")
+except Exception as e:
+    print(f"Error loading model: {e}")
+    model = None
+
+# Dimensi input yang diharapkan oleh model
+IMG_WIDTH, IMG_HEIGHT = 150, 150
+
+@app.post("/predict/")
+async def predict(file: UploadFile = File(...)):
+    if model is None:
+        raise HTTPException(status_code=500, detail="Model is not loaded")
+
+    try:
+        # Membaca file gambar
+        contents = await file.read()
+        img = Image.open(io.BytesIO(contents))
+
+        # Mengubah gambar menjadi format RGB jika tidak dalam format tersebut
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+
+        # Memproses gambar
+        img = img.resize((IMG_WIDTH, IMG_HEIGHT))
+        img_array = image.img_to_array(img)
+        img_array = np.expand_dims(img_array, axis=0)  # Menambahkan batch dimension
+
+        # Melakukan prediksi
+        predictions = model.predict(img_array)
+        predicted_class = np.argmax(predictions, axis=1)[0]
+
+        # Mengembalikan hasil prediksi sebagai JSON response
+        return JSONResponse(content={"predicted_class": int(predicted_class)})
+
+    except Exception as e:
+        print(f"Error during prediction: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+#llammaa3-70b-8192
+#=======================================================================================================================
 
 with open('api_key.txt', 'r') as txt_r:
     os.environ["GROQ_API_KEY"] = txt_r.readlines()[0]
@@ -67,6 +124,9 @@ def create_chat(user_prompt: UserPrompt):
     # print(response.choices[0].message.content)
     return {"response": response.choices[0].message.content}
 
+
+#doc dummy
+#=======================================================================================================================
 @app.get("/doc")
 def read_doc():
     return [
@@ -491,3 +551,7 @@ def read_doc():
         "content": "-106 -\n2) kode wilayah, nomor urut registrasi 2, dengan seri huruf DKI, untuk \nWakil Gubernur; \n3) kode wilayah, nomor urut registrasi 3, dengan seri huruf DKI, untuk \nKetua DPRD Provinsi; \n4) kode wilayah, nomor urut registrasi 4 sampai dengan 150 dengan seri \nhuruf DKI, untuk Pejabat lainnya sesuai urutan pejabat sipil daerah \nProvinsi DKI Jakarta; \nJ. NRKB untuk Ranmor dinas jabatan bagi pejabat pemerintah di daerah \nkabupaten/kota, diatur sebagai berikut: \n1) kode wilayah, nomor urut registrasi 1, dengan seri huruf alokasi \nkabupaten/kota, untuk Bupati/Walikota; \n2) kode wilayah, nomor urut registrasi 2, dengan seri huruf alokasi \nkabupaten/kota, untuk Wakil Bupati/Wakil Walikota; \n3) kode wilayah, nomor urut registrasi 3, dengan seri huruf alokasi \nkabupaten/kota, untuk Ketua DPRD Kabupaten/Kota; \n4) kode wilayah, nomor urut registrasi 4 sampai dengan 30 dengan \nalokasi seri huruf awal untuk kabupaten/kota, untuk pejabat lainnya \nsesuai urutan pejabat sipil daerah kabupaten/kota masing-masing; \nK. NRKB untuk STCK dan TCKB \n1) kendaraan bermotor yang belum diregistrasi tetapi dioperasikan \ndi jalan dengan kepentingan tertentu, menggunakan nomor registrasi \nsementara yang ditandai dengan huruf seri XX, XY, YY, dan YX; \n2) penggunaan huruf seri XX, XY, YY dan YX sebagaimana dimaksud \nayat (1) diberikan kepada badan usaha di bidang penjualan, \npembuatan, perakitan, atau impor kendaraan bermotor; \n3) untuk Polda yang telah dizinkan menggunakan 3 (tiga) huruf seri, \npenerbitan nomor Registrasi sementara pada STCK apabila 2 (dua) \nhuruf seri sudah habis dapat menggunakan 3 (tiga) huruf seri XXX, \nXYY, YYX, YXY, YYY dan YXX. \nL. Susunan kode pengoperasian untuk Ranmor Asing yang dioperasikan \nsementara di wilayah Negara Republik Kesatuan Indonesia dengan STNK\u00ad\nLBN dan TNKB-LBN sebagai berikut: "
     }
 ]
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

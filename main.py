@@ -5,7 +5,7 @@ import os
 from pydantic import BaseModel
 from groq import Groq
 
-#baru
+#baru njir
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
 from tensorflow.keras.models import load_model

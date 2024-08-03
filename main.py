@@ -48,12 +48,15 @@ async def predict(file: UploadFile = File(...)):
 
         # Memproses gambar
         img = img.resize((IMG_WIDTH, IMG_HEIGHT))
+
+        #array
         img_array = image.img_to_array(img)
         img_array = np.expand_dims(img_array, axis=0)  # Menambahkan batch dimension
+        img_array = img_array / 255.0
 
         # Melakukan prediksi
-        predictions = model.predict(img_array)
-        predicted_class = np.argmax(predictions, axis=1)[0]
+        # predictions = model.predict(img_array)
+        # predicted_class = np.argmax(predictions, axis=1)[0]
 
         #Melakukan prediksi
         classes = model.predict(img_array, batch_size=1)

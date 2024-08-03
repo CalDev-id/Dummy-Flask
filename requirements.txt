@@ -82,6 +82,7 @@ typing_extensions
 pydantic
 pydantic_core
 groq
+python-multipart
 pillow==10.4.0
 # sklearn==1.2.2
 numpy==1.26.4

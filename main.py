@@ -56,7 +56,8 @@ async def predict(file: UploadFile = File(...)):
         predicted_class = np.argmax(predictions, axis=1)[0]
 
         #Melakukan prediksi
-        classes = model.predict(x, batch_size=1)
+        classes = model.predict(img_array, batch_size=1)
+        
         class_list = ['Ikan', 'Udang']
         predicted_class = class_list[np.argmax(classes[0])]
 

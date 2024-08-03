@@ -55,8 +55,14 @@ async def predict(file: UploadFile = File(...)):
         predictions = model.predict(img_array)
         predicted_class = np.argmax(predictions, axis=1)[0]
 
+        #Melakukan prediksi
+        classes = model.predict(x, batch_size=1)
+        class_list = ['Ikan', 'Udang']
+        predicted_class = class_list[np.argmax(classes[0])]
+
         # Mengembalikan hasil prediksi sebagai JSON response
-        return JSONResponse(content={"predicted_class": int(predicted_class)})
+        # return JSONResponse(content={"predicted_class": int(predicted_class)})
+        return JSONResponse(content={"predicted_class": predicted_class})
 
     except Exception as e:
         print(f"Error during prediction: {e}")

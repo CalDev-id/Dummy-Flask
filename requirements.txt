@@ -83,7 +83,7 @@ pydantic
 pydantic_core
 groq
 pillow
-sklearn
+sklearn==1.2.2
 numpy==1.26.4
 tensorflow==2.15.0
 keras==2.15.0

@@ -114,14 +114,15 @@ def create_chat(user_prompt: UserPrompt):
     system_prompt = '''
     saya ingin kamu membuat pertanyaan dari input user.
     saya ingin kamu membuat response dalam bahasa indonesia.
-    pastikan pertanyaan yang kamu buat sesuai dan jawabannya ada di dalam input user.
 
-    saat membuat response, ikutilah format dibawah ini:
+    hanya jawab dengan format dibawah ini, dan jangan ditambahkan!:
+
     Pertanyaan: 
     1. [disini kamu membuat pertanyaan pertama dari input yang diberikan oleh user].
     2. [disini kamu membuat pertanyaan kedua dari input yang diberikan oleh user].
     3. [disini kamu membuat pertanyaan ke-n dari input yang diberikan oleh user].
     '''
+
 
     # user_prompt = '''
     # bahwa untuk melaksanakan ketentuan pasal 64 ayat (6),

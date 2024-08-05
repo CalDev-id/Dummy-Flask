@@ -76,66 +76,129 @@ async def predict(file: UploadFile = File(...)):
 #llammaa3-70b-8192
 #=======================================================================================================================
 
+# with open('api_key.txt', 'r') as txt_r:
+#     os.environ["GROQ_API_KEY"] = txt_r.readlines()[0]
+
+# class GroqRunTime():
+#     def __init__(self):
+#         self.client = Groq(
+#             # this is the default and can be omitted
+#             api_key=os.environ.get("GROQ_API_KEY"),
+#         )
+
+#     def generate_response(self, system_prompt, user_prompt):
+#         responses = self.client.chat.completions.create(
+#             messages=[
+#                 {
+#                     "role": "system",
+#                     "content": system_prompt
+#                 },
+#                 {
+#                     "role": "user",
+#                     "content": user_prompt
+#                 }
+#             ],
+#             model = "llama3-70b-8192",
+#             temperature = 0.3
+#             # repetition_penalty = 0.8,
+#         )
+#         return responses
+
+# class UserPrompt(BaseModel):
+#     user_prompt: str
+
+# @app.post("/chat")
+# def create_chat(user_prompt: UserPrompt):
+#     groq_run = GroqRunTime()
+
+#     system_prompt = '''
+#     saya ingin kamu membuat pertanyaan dari input user.
+#     saya ingin kamu membuat response dalam bahasa indonesia.
+
+#     hanya jawab dengan format dibawah ini, dan jangan ditambahkan!:
+
+#     Pertanyaan: 
+#     1. [disini kamu membuat pertanyaan pertama dari input yang diberikan oleh user].
+#     2. [disini kamu membuat pertanyaan kedua dari input yang diberikan oleh user].
+#     3. [disini kamu membuat pertanyaan ke-n dari input yang diberikan oleh user].
+#     '''
+
+
+#     # user_prompt = '''
+#     # bahwa untuk melaksanakan ketentuan pasal 64 ayat (6),
+#     # pasal 68 ayat (6), pasal 69 ayat (3), pasal 72 ayat (3)
+#     # dan pasal 75 undang undang nomor 22 tahun 2009 tentang lalu lintas dan angkutan jalan,
+#     # telah dikeluarkan  peraturan kepala kepolisian republik indonesia nomor 5 tahun 2012 tentang registrasi dan identifikasi kendaraan bermotor.
+#     # '''
+
+#     response = groq_run.generate_response(system_prompt, user_prompt.user_prompt)
+
+#     # print(response.choices[0].message.content)
+#     return {"response": response.choices[0].message.content}
+
+
+#persona chatbot 
+#=======================================================================================================================
+
+# Load API key
 with open('api_key.txt', 'r') as txt_r:
-    os.environ["GROQ_API_KEY"] = txt_r.readlines()[0]
+    os.environ["GROQ_API_KEY"] = txt_r.readlines()[0].strip()
 
-class GroqRunTime():
+class GroqRunTime:
     def __init__(self):
-        self.client = Groq(
-            # this is the default and can be omitted
-            api_key=os.environ.get("GROQ_API_KEY"),
-        )
+        self.client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+        self.conversations = {}  # Menyimpan riwayat percakapan berdasarkan user ID
 
-    def generate_response(self, system_prompt, user_prompt):
-        responses = self.client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt
-                },
-                {
-                    "role": "user",
-                    "content": user_prompt
-                }
-            ],
-            model = "llama3-70b-8192",
-            temperature = 0.3
-            # repetition_penalty = 0.8,
-        )
-        return responses
+    def get_conversation(self, user_id):
+        return self.conversations.get(user_id, [])
+
+    def update_conversation(self, user_id, messages):
+        self.conversations[user_id] = messages
+
+    def generate_response(self, user_id, user_prompt):
+        # Ambil riwayat percakapan untuk pengguna ini
+        conversation = self.get_conversation(user_id)
+
+        # Tambahkan pesan pengguna ke riwayat
+        conversation.append({"role": "user", "content": user_prompt})
+
+        # Buat permintaan ke API dengan riwayat percakapan
+        try:
+            responses = self.client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": "Nama kamu adalah Keqing, kamu berasal dari Liyue. Kamu adalah karakter yang bijaksana dan kuat."}
+                ] + conversation,
+                model="llama3-70b-8192",
+                temperature=0.3
+                # repetition_penalty=0.8,  # Uncomment if needed
+            )
+
+            # Ambil respons dari model
+            response_message = responses.choices[0].message.content  # Akses dengan atribut
+
+            # Tambahkan respons dari model ke riwayat
+            conversation.append({"role": "assistant", "content": response_message})
+
+            # Perbarui riwayat percakapan untuk pengguna ini
+            self.update_conversation(user_id, conversation)
+
+            return response_message
+        except Exception as e:
+            return {"error": str(e)}
 
 class UserPrompt(BaseModel):
+    user_id: str
     user_prompt: str
 
 @app.post("/chat")
 def create_chat(user_prompt: UserPrompt):
     groq_run = GroqRunTime()
+    response = groq_run.generate_response(user_prompt.user_id, user_prompt.user_prompt)
 
-    system_prompt = '''
-    saya ingin kamu membuat pertanyaan dari input user.
-    saya ingin kamu membuat response dalam bahasa indonesia.
+    if isinstance(response, dict) and "error" in response:
+        return {"response": f"Error: {response['error']}"}
 
-    hanya jawab dengan format dibawah ini, dan jangan ditambahkan!:
-
-    Pertanyaan: 
-    1. [disini kamu membuat pertanyaan pertama dari input yang diberikan oleh user].
-    2. [disini kamu membuat pertanyaan kedua dari input yang diberikan oleh user].
-    3. [disini kamu membuat pertanyaan ke-n dari input yang diberikan oleh user].
-    '''
-
-
-    # user_prompt = '''
-    # bahwa untuk melaksanakan ketentuan pasal 64 ayat (6),
-    # pasal 68 ayat (6), pasal 69 ayat (3), pasal 72 ayat (3)
-    # dan pasal 75 undang undang nomor 22 tahun 2009 tentang lalu lintas dan angkutan jalan,
-    # telah dikeluarkan  peraturan kepala kepolisian republik indonesia nomor 5 tahun 2012 tentang registrasi dan identifikasi kendaraan bermotor.
-    # '''
-
-    response = groq_run.generate_response(system_prompt, user_prompt.user_prompt)
-
-    # print(response.choices[0].message.content)
-    return {"response": response.choices[0].message.content}
-
+    return {"response": response}
 
 #doc dummy
 #=======================================================================================================================

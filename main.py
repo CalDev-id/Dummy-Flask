@@ -15,6 +15,8 @@ import numpy as np
 from PIL import Image
 import io
 
+from typing import List, Dict, Any
+
 app = FastAPI()
 #uvicorn main:app --reload
 
@@ -144,7 +146,7 @@ async def predict(file: UploadFile = File(...)):
 with open('api_key.txt', 'r') as txt_r:
     os.environ["GROQ_API_KEY"] = txt_r.readlines()[0].strip()
 
-class GroqRunTime:
+class GroqRunTime2:
     def __init__(self):
         self.client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
         self.conversations = {}  # Menyimpan riwayat percakapan berdasarkan user ID
@@ -186,14 +188,66 @@ class GroqRunTime:
         except Exception as e:
             return {"error": str(e)}
 
-class UserPrompt(BaseModel):
+class UserPrompt2(BaseModel):
     user_id: str
     user_prompt: str
 
 @app.post("/chat")
+def create_chat2(user_prompt: UserPrompt2):
+    groq_run = GroqRunTime2()
+    response = groq_run.generate_response(user_prompt.user_id, user_prompt.user_prompt)
+
+    if isinstance(response, dict) and "error" in response:
+        return {"response": f"Error: {response['error']}"}
+
+    return {"response": response}
+
+#persona chatbot 
+#=======================================================================================================================
+
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class UserPrompt(BaseModel):
+    user_id: str
+    user_prompt: str
+    previous_chat: List[ChatMessage]
+
+class GroqRunTime:
+    def __init__(self):
+        with open('api_key.txt', 'r') as txt_r:
+            os.environ["GROQ_API_KEY"] = txt_r.readlines()[0].strip()
+        self.client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
+    def generate_response(self, user_id: str, user_prompt: str, previous_chat: List[Dict[str, Any]]):
+        conversation = [{"role": msg['role'], "content": msg['content']} for msg in previous_chat]
+        conversation.append({"role": "user", "content": user_prompt})
+
+        try:
+            responses = self.client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": "Nama kamu adalah Keqing, kamu berasal dari Liyue. Kamu adalah karakter yang bijaksana dan kuat."}
+                ] + conversation,
+                model="llama3-70b-8192",
+                temperature=0.3
+            )
+
+            response_message = responses.choices[0].message.content
+
+            return response_message
+        except Exception as e:
+            return {"error": str(e)}
+
+@app.post("/chat-waifu")
 def create_chat(user_prompt: UserPrompt):
     groq_run = GroqRunTime()
-    response = groq_run.generate_response(user_prompt.user_id, user_prompt.user_prompt)
+    response = groq_run.generate_response(
+        user_prompt.user_id, 
+        user_prompt.user_prompt, 
+        [{"role": msg.role, "content": msg.content} for msg in user_prompt.previous_chat]
+    )
 
     if isinstance(response, dict) and "error" in response:
         return {"response": f"Error: {response['error']}"}

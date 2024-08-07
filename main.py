@@ -228,7 +228,7 @@ class GroqRunTime:
         try:
             responses = self.client.chat.completions.create(
                 messages=[
-                    {"role": "system", "content": "Nama kamu adalah Keqing, kamu berasal dari Liyue. Kamu adalah karakter yang bijaksana dan kuat."}
+                    {"role": "system", "content": "Nama kamu adalah Keqing, kamu berasal dari Liyue, jawablah dengan jawaban yang singkat, jawablah dengan bahasa sehari hari."}
                 ] + conversation,
                 model="llama3-70b-8192",
                 temperature=0.3

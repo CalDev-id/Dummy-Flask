@@ -206,6 +206,56 @@ async def predict(file: UploadFile = File(...)):
 #=======================================================================================================================
 
 
+# class ChatMessage(BaseModel):
+#     role: str
+#     content: str
+
+# class UserPrompt(BaseModel):
+#     user_id: str
+#     user_prompt: str
+#     previous_chat: List[ChatMessage]
+
+# class GroqRunTime:
+#     def __init__(self):
+#         with open('api_key.txt', 'r') as txt_r:
+#             os.environ["GROQ_API_KEY"] = txt_r.readlines()[0].strip()
+#         self.client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
+#     def generate_response(self, user_id: str, user_prompt: str, previous_chat: List[Dict[str, Any]]):
+#         conversation = [{"role": msg['role'], "content": msg['content']} for msg in previous_chat]
+#         conversation.append({"role": "user", "content": user_prompt})
+
+#         try:
+#             responses = self.client.chat.completions.create(
+#                 messages=[
+#                     {"role": "system", "content": "i want you to do roleplay as Keqing, you are the yuheng of liyue qixing, don't answer too long (max 1 paragraph) and sometimes answer a little tsundere, So that you can understand the context, here is the chat history :"}
+#                 ] + conversation,
+#                 model="llama3-70b-8192",
+#                 temperature=0.3
+#             )
+
+#             response_message = responses.choices[0].message.content
+
+#             return response_message
+#         except Exception as e:
+#             return {"error": str(e)}
+
+# @app.post("/chat-waifu")
+# def create_chat(user_prompt: UserPrompt):
+#     groq_run = GroqRunTime()
+#     response = groq_run.generate_response(
+#         user_prompt.user_id, 
+#         user_prompt.user_prompt, 
+#         [{"role": msg.role, "content": msg.content} for msg in user_prompt.previous_chat]
+#     )
+
+#     if isinstance(response, dict) and "error" in response:
+#         return {"response": f"Error: {response['error']}"}
+
+#     return {"response": response}
+
+
+#testing
 class ChatMessage(BaseModel):
     role: str
     content: str
@@ -222,14 +272,16 @@ class GroqRunTime:
         self.client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
     def generate_response(self, user_id: str, user_prompt: str, previous_chat: List[Dict[str, Any]]):
-        conversation = [{"role": msg['role'], "content": msg['content']} for msg in previous_chat]
-        conversation.append({"role": "user", "content": user_prompt})
+        # Menggabungkan previous_chat ke dalam user_prompt
+        chat_history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in previous_chat])
+        full_prompt = f"chat history : {chat_history}\nuser: {user_prompt}"
 
         try:
             responses = self.client.chat.completions.create(
                 messages=[
-                    {"role": "system", "content": "i want you to do roleplay as Keqing, you are the yuheng of liyue qixing, don't answer too long (max 1 paragraph) and sometimes answer a little tsundere, So that you can understand the context, here is the chat history :"}
-                ] + conversation,
+                    {"role": "system", "content": "i want you to do roleplay as Keqing, you are the yuheng of liyue qixing, don't answer too long (max 1 paragraph) and sometimes answer a little tsundere."},
+                    {"role": "user", "content": full_prompt}
+                ],
                 model="llama3-70b-8192",
                 temperature=0.3
             )
@@ -253,6 +305,7 @@ def create_chat(user_prompt: UserPrompt):
         return {"response": f"Error: {response['error']}"}
 
     return {"response": response}
+
 
 #doc dummy
 #=======================================================================================================================

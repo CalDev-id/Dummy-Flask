@@ -168,16 +168,16 @@ class GroqRunTime2:
         try:
             responses = self.client.chat.completions.create(
                 messages=[
-                    {"role": "system", "content": "i want you to do roleplay as Keqing, you are the yuheng of liyue qixing, don't answer too long, don't answer too formally and sometimes answer a little tsundere"}
+                    {"role": "system", "content": "i want you to do roleplay as Keqing, you are the yuheng of liyue qixing, don't answer too long, don't answer too formally and sometimes answer a little tsundere, So that you can understand the context, here is the chat history :"}
                 ] + conversation,
                 model="llama3-70b-8192",
-                temperature=0.3
-                # repetition_penalty=0.8,  # Uncomment if needed
+                temperature=0.3,
+                repetition_penalty=0.8  # Uncomment if needed
             )
 
             # Ambil respons dari model
             response_message = responses.choices[0].message.content  # Akses dengan atribut
-
+            print(response_message)
             # Tambahkan respons dari model ke riwayat
             conversation.append({"role": "assistant", "content": response_message})
 

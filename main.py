@@ -143,64 +143,64 @@ async def predict(file: UploadFile = File(...)):
 #=======================================================================================================================
 
 # Load API key
-with open('api_key.txt', 'r') as txt_r:
-    os.environ["GROQ_API_KEY"] = txt_r.readlines()[0].strip()
+# with open('api_key.txt', 'r') as txt_r:
+#     os.environ["GROQ_API_KEY"] = txt_r.readlines()[0].strip()
 
-class GroqRunTime2:
-    def __init__(self):
-        self.client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-        self.conversations = {}  # Menyimpan riwayat percakapan berdasarkan user ID
+# class GroqRunTime2:
+#     def __init__(self):
+#         self.client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+#         self.conversations = {}  # Menyimpan riwayat percakapan berdasarkan user ID
 
-    def get_conversation(self, user_id):
-        return self.conversations.get(user_id, [])
+#     def get_conversation(self, user_id):
+#         return self.conversations.get(user_id, [])
 
-    def update_conversation(self, user_id, messages):
-        self.conversations[user_id] = messages
+#     def update_conversation(self, user_id, messages):
+#         self.conversations[user_id] = messages
 
-    def generate_response(self, user_id, user_prompt):
-        # Ambil riwayat percakapan untuk pengguna ini
-        conversation = self.get_conversation(user_id)
+#     def generate_response(self, user_id, user_prompt):
+#         # Ambil riwayat percakapan untuk pengguna ini
+#         conversation = self.get_conversation(user_id)
 
-        # Tambahkan pesan pengguna ke riwayat
-        conversation.append({"role": "user", "content": user_prompt})
+#         # Tambahkan pesan pengguna ke riwayat
+#         conversation.append({"role": "user", "content": user_prompt})
 
-        # Buat permintaan ke API dengan riwayat percakapan
-        try:
-            responses = self.client.chat.completions.create(
-                messages=[
-                    {"role": "system", "content": "i want you to do roleplay as Keqing, you are the yuheng of liyue qixing, don't answer too long, don't answer too formally and sometimes answer a little tsundere, So that you can understand the context, here is the chat history :"}
-                ] + conversation,
-                model="llama3-70b-8192",
-                temperature=0.3,
-                repetition_penalty=0.8  # Uncomment if needed
-            )
+#         # Buat permintaan ke API dengan riwayat percakapan
+#         try:
+#             responses = self.client.chat.completions.create(
+#                 messages=[
+#                     {"role": "system", "content": "i want you to do roleplay as Keqing, you are the yuheng of liyue qixing, don't answer too long, don't answer too formally and sometimes answer a little tsundere, So that you can understand the context, here is the chat history :"}
+#                 ] + conversation,
+#                 model="llama3-70b-8192",
+#                 temperature=0.3,
+#                 repetition_penalty=0.8  # Uncomment if needed
+#             )
 
-            # Ambil respons dari model
-            response_message = responses.choices[0].message.content  # Akses dengan atribut
-            print(response_message)
-            # Tambahkan respons dari model ke riwayat
-            conversation.append({"role": "assistant", "content": response_message})
+#             # Ambil respons dari model
+#             response_message = responses.choices[0].message.content  # Akses dengan atribut
+#             print(response_message)
+#             # Tambahkan respons dari model ke riwayat
+#             conversation.append({"role": "assistant", "content": response_message})
 
-            # Perbarui riwayat percakapan untuk pengguna ini
-            self.update_conversation(user_id, conversation)
+#             # Perbarui riwayat percakapan untuk pengguna ini
+#             self.update_conversation(user_id, conversation)
 
-            return response_message
-        except Exception as e:
-            return {"error": str(e)}
+#             return response_message
+#         except Exception as e:
+#             return {"error": str(e)}
 
-class UserPrompt2(BaseModel):
-    user_id: str
-    user_prompt: str
+# class UserPrompt2(BaseModel):
+#     user_id: str
+#     user_prompt: str
 
-@app.post("/chat")
-def create_chat2(user_prompt: UserPrompt2):
-    groq_run = GroqRunTime2()
-    response = groq_run.generate_response(user_prompt.user_id, user_prompt.user_prompt)
+# @app.post("/chat")
+# def create_chat2(user_prompt: UserPrompt2):
+#     groq_run = GroqRunTime2()
+#     response = groq_run.generate_response(user_prompt.user_id, user_prompt.user_prompt)
 
-    if isinstance(response, dict) and "error" in response:
-        return {"response": f"Error: {response['error']}"}
+#     if isinstance(response, dict) and "error" in response:
+#         return {"response": f"Error: {response['error']}"}
 
-    return {"response": response}
+#     return {"response": response}
 
 #persona chatbot 
 #=======================================================================================================================
@@ -228,7 +228,7 @@ class GroqRunTime:
         try:
             responses = self.client.chat.completions.create(
                 messages=[
-                    {"role": "system", "content": "Nama kamu adalah Keqing, kamu berasal dari Liyue. Kamu adalah karakter yang bijaksana dan kuat."}
+                    {"role": "system", "content": "i want you to do roleplay as Keqing, you are the yuheng of liyue qixing, don't answer too long (max 1 paragraph) and sometimes answer a little tsundere, So that you can understand the context, here is the chat history :"}
                 ] + conversation,
                 model="llama3-70b-8192",
                 temperature=0.3

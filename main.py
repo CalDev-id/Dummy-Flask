@@ -117,7 +117,61 @@ async def predict2(file: UploadFile = File(...)):
         #Melakukan prediksi
         classes = model.predict(img_array, batch_size=1)
         
-        class_list = ['Acne', 'Clear']
+        class_list = ['Clear', 'Acne']
+        predicted_class = class_list[np.argmax(classes[0])]
+
+        # Mengembalikan hasil prediksi sebagai JSON response
+        # return JSONResponse(content={"predicted_class": int(predicted_class)})
+        return JSONResponse(content={"predicted_class": predicted_class})
+
+    except Exception as e:
+        print(f"Error during prediction: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+#load model comedo detection
+#=======================================================================================================================
+
+# Memuat model TensorFlow
+try:
+    model = load_model("models/ComedoDetection_v2.h5")
+    print("Model loaded successfully.")
+except Exception as e:
+    print(f"Error loading model: {e}")
+    model = None
+
+# Dimensi input yang diharapkan oleh model
+IMG_WIDTH, IMG_HEIGHT = 150, 150
+
+@app.post("/Comedopredict/")
+async def predict3(file: UploadFile = File(...)):
+    if model is None:
+        raise HTTPException(status_code=500, detail="Model is not loaded")
+
+    try:
+        # Membaca file gambar
+        contents = await file.read()
+        img = Image.open(io.BytesIO(contents))
+
+        # Mengubah gambar menjadi format RGB jika tidak dalam format tersebut
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+
+        # Memproses gambar
+        img = img.resize((IMG_WIDTH, IMG_HEIGHT))
+
+        #array
+        img_array = image.img_to_array(img)
+        img_array = np.expand_dims(img_array, axis=0)  # Menambahkan batch dimension
+        img_array = img_array / 255.0
+
+        # Melakukan prediksi
+        # predictions = model.predict(img_array)
+        # predicted_class = np.argmax(predictions, axis=1)[0]
+
+        #Melakukan prediksi
+        classes = model.predict(img_array, batch_size=1)
+        
+        class_list = ['Clear', 'Comedo']
         predicted_class = class_list[np.argmax(classes[0])]
 
         # Mengembalikan hasil prediksi sebagai JSON response

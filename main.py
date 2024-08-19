@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from groq import Groq
 
 #baru njir
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
@@ -23,56 +23,56 @@ app = FastAPI()
 #load model
 #=======================================================================================================================
 
-# Memuat model TensorFlow
-try:
-    model = load_model("models/my_model.keras")
-    print("Model loaded successfully.")
-except Exception as e:
-    print(f"Error loading model: {e}")
-    model = None
+# # Memuat model TensorFlow
+# try:
+#     model = load_model("models/my_model.keras")
+#     print("Model loaded successfully.")
+# except Exception as e:
+#     print(f"Error loading model: {e}")
+#     model = None
 
-# Dimensi input yang diharapkan oleh model
-IMG_WIDTH, IMG_HEIGHT = 150, 150
+# # Dimensi input yang diharapkan oleh model
+# IMG_WIDTH, IMG_HEIGHT = 150, 150
 
-@app.post("/predict/")
-async def predict(file: UploadFile = File(...)):
-    if model is None:
-        raise HTTPException(status_code=500, detail="Model is not loaded")
+# @app.post("/predict/")
+# async def predict(file: UploadFile = File(...)):
+#     if model is None:
+#         raise HTTPException(status_code=500, detail="Model is not loaded")
 
-    try:
-        # Membaca file gambar
-        contents = await file.read()
-        img = Image.open(io.BytesIO(contents))
+#     try:
+#         # Membaca file gambar
+#         contents = await file.read()
+#         img = Image.open(io.BytesIO(contents))
 
-        # Mengubah gambar menjadi format RGB jika tidak dalam format tersebut
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
+#         # Mengubah gambar menjadi format RGB jika tidak dalam format tersebut
+#         if img.mode != 'RGB':
+#             img = img.convert('RGB')
 
-        # Memproses gambar
-        img = img.resize((IMG_WIDTH, IMG_HEIGHT))
+#         # Memproses gambar
+#         img = img.resize((IMG_WIDTH, IMG_HEIGHT))
 
-        #array
-        img_array = image.img_to_array(img)
-        img_array = np.expand_dims(img_array, axis=0)  # Menambahkan batch dimension
-        img_array = img_array / 255.0
+#         #array
+#         img_array = image.img_to_array(img)
+#         img_array = np.expand_dims(img_array, axis=0)  # Menambahkan batch dimension
+#         img_array = img_array / 255.0
 
-        # Melakukan prediksi
-        # predictions = model.predict(img_array)
-        # predicted_class = np.argmax(predictions, axis=1)[0]
+#         # Melakukan prediksi
+#         # predictions = model.predict(img_array)
+#         # predicted_class = np.argmax(predictions, axis=1)[0]
 
-        #Melakukan prediksi
-        classes = model.predict(img_array, batch_size=1)
+#         #Melakukan prediksi
+#         classes = model.predict(img_array, batch_size=1)
         
-        class_list = ['Ikan', 'Udang']
-        predicted_class = class_list[np.argmax(classes[0])]
+#         class_list = ['Ikan', 'Udang']
+#         predicted_class = class_list[np.argmax(classes[0])]
 
-        # Mengembalikan hasil prediksi sebagai JSON response
-        # return JSONResponse(content={"predicted_class": int(predicted_class)})
-        return JSONResponse(content={"predicted_class": predicted_class})
+#         # Mengembalikan hasil prediksi sebagai JSON response
+#         # return JSONResponse(content={"predicted_class": int(predicted_class)})
+#         return JSONResponse(content={"predicted_class": predicted_class})
 
-    except Exception as e:
-        print(f"Error during prediction: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+#     except Exception as e:
+#         print(f"Error during prediction: {e}")
+#         raise HTTPException(status_code=500, detail="Internal Server Error")
     
 #load model skin detection
 #=======================================================================================================================
@@ -85,11 +85,10 @@ except Exception as e:
     print(f"Error loading model: {e}")
     model = None
 
-# Dimensi input yang diharapkan oleh model
-IMG_WIDTH, IMG_HEIGHT = 150, 150
-
 @app.post("/Acnepredict/")
 async def predict2(file: UploadFile = File(...)):
+    # Dimensi input yang diharapkan oleh model
+    IMG_WIDTH, IMG_HEIGHT = 150, 150
     if model is None:
         raise HTTPException(status_code=500, detail="Model is not loaded")
 
@@ -139,11 +138,10 @@ except Exception as e:
     print(f"Error loading model: {e}")
     model = None
 
-# Dimensi input yang diharapkan oleh model
-IMG_WIDTH, IMG_HEIGHT = 150, 150
-
 @app.post("/Comedopredict/")
 async def predict3(file: UploadFile = File(...)):
+    # Dimensi input yang diharapkan oleh model
+    IMG_WIDTH, IMG_HEIGHT = 150, 150
     if model is None:
         raise HTTPException(status_code=500, detail="Model is not loaded")
 
@@ -177,6 +175,142 @@ async def predict3(file: UploadFile = File(...)):
         # Mengembalikan hasil prediksi sebagai JSON response
         # return JSONResponse(content={"predicted_class": int(predicted_class)})
         return JSONResponse(content={"predicted_class": predicted_class})
+
+    except Exception as e:
+        print(f"Error during prediction: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+# #load model acne level
+# #=======================================================================================================================
+
+# # Memuat model TensorFlow
+# try:
+#     model = load_model("models/AcneLVL_v1.h5")
+#     print("Model loaded successfully.")
+# except Exception as e:
+#     print(f"Error loading model: {e}")
+#     model = None
+
+
+# @app.post("/AcneLevelPredict/")
+# async def predict_AcneLVL(file: UploadFile = File(...)):
+#     # Dimensi input yang diharapkan oleh model
+#     IMG_WIDTH, IMG_HEIGHT = 160, 160
+
+#     if model is None:
+#         raise HTTPException(status_code=500, detail="Model is not loaded")
+
+#     try:
+#         # Membaca file gambar
+#         contents = await file.read()
+#         img = Image.open(io.BytesIO(contents))
+
+#         # Mengubah gambar menjadi format RGB jika tidak dalam format tersebut
+#         if img.mode != 'RGB':
+#             img = img.convert('RGB')
+
+#         # Memproses gambar
+#         img = img.resize((IMG_WIDTH, IMG_HEIGHT))
+
+#         #array
+#         img_array = image.img_to_array(img)
+#         img_array = np.expand_dims(img_array, axis=0)  # Menambahkan batch dimension
+#         img_array = img_array / 255.0
+
+#         # Melakukan prediksi
+#         # predictions = model.predict(img_array)
+#         # predicted_class = np.argmax(predictions, axis=1)[0]
+
+#         #Melakukan prediksi
+#         classes = model.predict(img_array, batch_size=1)
+        
+#         class_list = ['Level 0', 'Level 1', 'Level 2']
+#         predicted_class = class_list[np.argmax(classes[0])]
+
+#         # Mengembalikan hasil prediksi sebagai JSON response
+#         # return JSONResponse(content={"predicted_class": int(predicted_class)})
+#         return JSONResponse(content={"predicted_class": predicted_class})
+
+#     except Exception as e:
+#         print(f"Error during prediction: {e}")
+#         raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+
+#MODEL COMBINATION
+#=======================================================================================================================
+# Load Acne Detection Model
+try:
+    acne_model = load_model("models/AcneDetection.h5")
+    print("Acne Detection Model loaded successfully.")
+except Exception as e:
+    print(f"Error loading Acne Detection Model: {e}")
+    acne_model = None
+
+# Load Comedo Detection Model
+try:
+    comedo_model = load_model("models/ComedoDetection_v2.h5")
+    print("Comedo Detection Model loaded successfully.")
+except Exception as e:
+    print(f"Error loading Comedo Detection Model: {e}")
+    comedo_model = None
+
+# Load Acne Level Model
+try:
+    acne_level_model = load_model("models/AcneLVL_v1.h5")
+    print("Acne Level Model loaded successfully.")
+except Exception as e:
+    print(f"Error loading Acne Level Model: {e}")
+    acne_level_model = None
+
+@app.post("/Skinalyze-Predict/")
+async def predictSkinalyze(file: UploadFile = File(...)):
+    IMG_WIDTH, IMG_HEIGHT = 150, 150
+    IMG_WIDTH_LVL, IMG_HEIGHT_LVL = 160, 160
+    if acne_model is None or comedo_model is None or acne_level_model is None:
+        raise HTTPException(status_code=500, detail="One or more models are not loaded")
+
+    try:
+        # Read and preprocess image
+        contents = await file.read()
+        img = Image.open(io.BytesIO(contents))
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        img_acne = img.resize((IMG_WIDTH, IMG_HEIGHT))
+        img_comedo = img.resize((IMG_WIDTH, IMG_HEIGHT))
+        img_acne_lvl = img.resize((IMG_WIDTH_LVL, IMG_HEIGHT_LVL))
+
+        # Prepare image arrays
+        img_acne_array = np.expand_dims(np.array(img_acne) / 255.0, axis=0)
+        img_comedo_array = np.expand_dims(np.array(img_comedo) / 255.0, axis=0)
+        img_acne_lvl_array = np.expand_dims(np.array(img_acne_lvl) / 255.0, axis=0)
+
+        # Predict Acne
+        acne_classes = acne_model.predict(img_acne_array)
+        #issue njir
+        acne_class_list = ['Acne', 'Clear']
+        acne_prediction = acne_class_list[np.argmax(acne_classes[0])]
+
+        if acne_prediction == 'Clear':
+            # If acne prediction is clear, automatically set acne level to Level 1
+            acne_level_prediction = 'Level 0'
+        else:
+            # If acne prediction is acne, predict the acne level
+            acne_level_classes = acne_level_model.predict(img_acne_lvl_array)
+            acne_level_class_list = ['Level 0', 'Level 1', 'Level 2']
+            acne_level_prediction = acne_level_class_list[np.argmax(acne_level_classes[0])]
+
+        # Predict Comedo
+        comedo_classes = comedo_model.predict(img_comedo_array)
+        comedo_class_list = ['Clear', 'Comedo']
+        comedo_prediction = comedo_class_list[np.argmax(comedo_classes[0])]
+
+        # Return predictions as JSON
+        return JSONResponse(content={
+            "acne_prediction": acne_prediction,
+            "acne_level_prediction": acne_level_prediction,
+            "comedo_prediction": comedo_prediction
+        })
 
     except Exception as e:
         print(f"Error during prediction: {e}")

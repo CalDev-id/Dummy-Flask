@@ -184,9 +184,9 @@ async def predict3(file: UploadFile = File(...)):
 # #load model acne level
 # #=======================================================================================================================
 
-# # Memuat model TensorFlow
+# Memuat model TensorFlow
 # try:
-#     model = load_model("models/AcneLVL_v1.h5")
+#     model = load_model("models/AcneLVL_v2baru.h5")
 #     print("Model loaded successfully.")
 # except Exception as e:
 #     print(f"Error loading model: {e}")
@@ -225,7 +225,7 @@ async def predict3(file: UploadFile = File(...)):
 #         #Melakukan prediksi
 #         classes = model.predict(img_array, batch_size=1)
         
-#         class_list = ['Level 0', 'Level 1', 'Level 2']
+#         class_list = ['Level 1', 'Level 2', 'Level 3']
 #         predicted_class = class_list[np.argmax(classes[0])]
 
 #         # Mengembalikan hasil prediksi sebagai JSON response
@@ -257,7 +257,7 @@ except Exception as e:
 
 # Load Acne Level Model
 try:
-    acne_level_model = load_model("models/AcneLVL_v1.h5")
+    acne_level_model = load_model("models/AcneLVL_v2baru.h5")
     print("Acne Level Model loaded successfully.")
 except Exception as e:
     print(f"Error loading Acne Level Model: {e}")
@@ -297,7 +297,7 @@ async def predictSkinalyze(file: UploadFile = File(...)):
         else:
             # If acne prediction is acne, predict the acne level
             acne_level_classes = acne_level_model.predict(img_acne_lvl_array)
-            acne_level_class_list = ['Level 0', 'Level 1', 'Level 2']
+            acne_level_class_list = ['Level 1', 'Level 2', 'Level 3']
             acne_level_prediction = acne_level_class_list[np.argmax(acne_level_classes[0])]
 
         # Predict Comedo

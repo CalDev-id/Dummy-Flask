@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 import io
 
 from typing import List, Dict, Any

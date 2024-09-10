@@ -83,6 +83,89 @@ async def predictSkinalyze(file: UploadFile = File(...)):
     except Exception as e:
         print(f"Error during prediction: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+#model fish or shrimp grading
+#=======================================================================================================================
+try:
+    model = load_model("models/my_model.keras")
+    print("Fish or Shrimp model loaded successfully.")
+except Exception as e:
+    print(f"Error loading Fish or Shrimp model: {e}")
+    model = None
+
+# Load the Fish Grading model
+try:
+    model_fishgrading = load_model("models/marine_grading_fish.h5")
+    print("Fish grading model loaded successfully.")
+except Exception as e:
+    print(f"Error loading Fish grading model: {e}")
+    model_fishgrading = None
+
+# Load the Shrimp Grading model
+try:
+    model_shrimpgrading = load_model("models/marine_grading_shrimp.h5")
+    print("Shrimp grading model loaded successfully.")
+except Exception as e:
+    print(f"Error loading Shrimp grading model: {e}")
+    model_shrimpgrading = None
+
+@app.post("/marine-grading/")
+async def marineGrading(file: UploadFile = File(...)):
+    IMG_WIDTH, IMG_HEIGHT = 150, 150
+    if model is None:
+        raise HTTPException(status_code=500, detail="Fish or Shrimp model is not loaded")
+
+    try:
+        # Read the image file
+        contents = await file.read()
+        img = Image.open(io.BytesIO(contents))
+
+        # Convert to RGB if not already in that format
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+
+        # Compress the image by reducing its quality to 85%
+        buffer = io.BytesIO()
+        img.save(buffer, format="JPEG", quality=85)
+        buffer.seek(0)
+        img = Image.open(buffer)
+
+        # Resize the image for the Fish or Shrimp model
+        img = img.resize((IMG_WIDTH, IMG_HEIGHT))
+        img_array = np.expand_dims(np.array(img) / 255.0, axis=0)
+
+        # Predict Fish or Shrimp
+        classes = model.predict(img_array)
+        predicted_class = 'Ikan' if np.argmax(classes[0]) == 0 else 'Udang'
+
+        # Choose the appropriate grading model and resize parameters
+        if predicted_class == 'Ikan':
+            if model_fishgrading is None:
+                raise HTTPException(status_code=500, detail="Fish grading model is not loaded")
+            grading_model = model_fishgrading
+            IMG_WIDTH, IMG_HEIGHT = 160, 160
+            class_list = ['A', 'B', 'C']
+        else:
+            if model_shrimpgrading is None:
+                raise HTTPException(status_code=500, detail="Shrimp grading model is not loaded")
+            grading_model = model_shrimpgrading
+            IMG_WIDTH, IMG_HEIGHT = 160, 160
+            class_list = ['A', 'B', 'C']
+
+        # Resize the image for the grading model
+        img = img.resize((IMG_WIDTH, IMG_HEIGHT))
+        img_array = np.expand_dims(np.array(img) / 255.0, axis=0)
+
+        # Predict the grade
+        grading_classes = grading_model.predict(img_array)
+        grading_result = class_list[np.argmax(grading_classes[0])]
+
+        # Return the prediction and grading result as a JSON response
+        return JSONResponse(content={"predicted_class": predicted_class, "grading_result": grading_result})
+
+    except Exception as e:
+        print(f"Error during prediction: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 #llammaa3-70b-8192
 #=======================================================================================================================
 

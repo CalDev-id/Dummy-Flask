@@ -21,7 +21,7 @@ app = FastAPI()
 #uvicorn main:app --reload
 @app.get("/")
 def read_root():
-    return {"message": "Skinalyze API is running v23 aug."}
+    return {"message": "Skinalyze API is running v10 sep."}
 
 
 # Load models
